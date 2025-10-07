@@ -62,11 +62,21 @@ def validar():
             if severity_order.get(e.get('severity', 'field'), 2) <= min_level
         ]
         
-        # Contar linhas e títulos do arquivo
+        # Calcular estatísticas do arquivo
         with open(temp_path, 'r', encoding='latin-1') as f:
             lines = f.readlines()
             total_linhas = len(lines)
-            total_titulos = sum(1 for line in lines if line.startswith('1'))
+            total_titulos = 0
+            valor_total = 0
+            
+            for line in lines:
+                if line.startswith('1'):  # Registro tipo 1 (detalhe/título)
+                    total_titulos += 1
+                    # Valor do título está nas posições 127-139 (13 dígitos, 2 decimais)
+                    if len(line) >= 139:
+                        valor_str = line[126:139].strip()
+                        if valor_str.isdigit():
+                            valor_total += int(valor_str) / 100  # Converter centavos para reais
         
         # Preparar resposta
         response = {
@@ -79,7 +89,7 @@ def validar():
                 'header_ok': lines[0].startswith('0') if lines else False,
                 'trailer_ok': lines[-1].startswith('9') if lines else False,
                 'total_titulos': total_titulos,
-                'valor_total': 0,  # Calculado durante validação se necessário
+                'valor_total': valor_total,
             }
         }
         
