@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Validador CNAB400 Bradesco</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        width: 100%;
+        padding: 40px;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 28px;
+      }
+
+      .subtitle {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+      }
+
+      .upload-area {
+        border: 2px dashed #667eea;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        background: #f8f9ff;
+        transition: all 0.3s;
+        cursor: pointer;
+      }
+
+      .upload-area:hover {
+        border-color: #764ba2;
+        background: #f0f2ff;
+      }
+
+      .upload-area.drag-over {
+        border-color: #764ba2;
+        background: #e8ebff;
+        transform: scale(1.02);
+      }
+
+      .upload-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+        color: #667eea;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .file-info {
+        margin-top: 15px;
+        padding: 10px;
+        background: white;
+        border-radius: 6px;
+        display: none;
+      }
+
+      .file-info.show {
+        display: block;
+      }
+
+      .options {
+        margin-top: 25px;
+        padding: 20px;
+        background: #f8f9ff;
+        border-radius: 8px;
+      }
+
+      .option-group {
+        margin-bottom: 15px;
+      }
+
+      .option-group:last-child {
+        margin-bottom: 0;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      input[type="number"],
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      input[type="checkbox"] {
+        margin-right: 8px;
+      }
+
+      .checkbox-label {
+        display: inline;
+        font-weight: normal;
+      }
+
+      .btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 20px;
+        transition: transform 0.2s, box-shadow 0.2s;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .result {
+        margin-top: 30px;
+        padding: 20px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .result.show {
+        display: block;
+      }
+
+      .result.success {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+      }
+
+      .result.error {
+        background: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+      }
+
+      .result h2 {
+        margin-bottom: 15px;
+        font-size: 20px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .stat-box {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .errors-list {
+        max-height: 400px;
+        overflow-y: auto;
+        background: white;
+        border-radius: 6px;
+        padding: 15px;
+      }
+
+      .error-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+
+      .error-item.fatal {
+        background: #f8d7da;
+        border-left-color: #dc3545;
+      }
+
+      .error-item.business {
+        background: #fff3cd;
+        border-left-color: #ffc107;
+      }
+
+      .error-severity {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+
+      .error-severity.fatal {
+        background: #dc3545;
+        color: white;
+      }
+
+      .error-severity.business {
+        background: #ffc107;
+        color: #333;
+      }
+
+      .error-severity.field {
+        background: #17a2b8;
+        color: white;
+      }
+
+      .loading {
+        display: none;
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .loading.show {
+        display: block;
+      }
+
+      .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏦 Validador CNAB400 Bradesco</h1>
+      <p class="subtitle">Valide arquivos de remessa bancária em segundos</p>
+
+      <form id="uploadForm">
+        <div class="upload-area" id="uploadArea">
+          <div class="upload-icon">📄</div>
+          <p>
+            <strong>Clique para selecionar</strong> ou arraste o arquivo aqui
+          </p>
+          <p style="font-size: 12px; color: #999; margin-top: 10px">
+            Arquivos .REM ou .TXT (máx 16MB)
+          </p>
+          <input
+            type="file"
+            id="fileInput"
+            name="arquivo"
+            accept=".REM,.rem,.txt,.TXT"
+          />
+          <div class="file-info" id="fileInfo"></div>
+        </div>
+
+        <div class="options">
+          <div class="option-group">
+            <label for="seculo_base">Século Base (para datas):</label>
+            <input
+              type="number"
+              id="seculo_base"
+              name="seculo_base"
+              value="2000"
+              min="1900"
+              max="2100"
+            />
+          </div>
+
+          <div class="option-group">
+            <label for="tolerancia_centavos"
+              >Tolerância Centavos (somatório):</label
+            >
+            <input
+              type="number"
+              id="tolerancia_centavos"
+              name="tolerancia_centavos"
+              value="0"
+              min="0"
+              max="100"
+            />
+          </div>
+
+          <div class="option-group">
+            <label for="min_severidade">Severidade Mínima:</label>
+            <select id="min_severidade" name="min_severidade">
+              <option value="fatal">Fatal (apenas críticos)</option>
+              <option value="business">Business (críticos + negócio)</option>
+              <option value="field" selected>Field (todos os erros)</option>
+            </select>
+          </div>
+
+          <div class="option-group">
+            <input
+              type="checkbox"
+              id="validar_nosso_numero"
+              name="validar_nosso_numero"
+            />
+            <label for="validar_nosso_numero" class="checkbox-label"
+              >Validar DV "Nosso Número"</label
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn" id="btnValidar" disabled>
+          Validar Arquivo
+        </button>
+      </form>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 10px; color: #667eea">Validando arquivo...</p>
+      </div>
+
+      <div class="result" id="result"></div>
+    </div>
+
+    <script>
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const fileInfo = document.getElementById("fileInfo");
+      const btnValidar = document.getElementById("btnValidar");
+      const uploadForm = document.getElementById("uploadForm");
+      const loading = document.getElementById("loading");
+      const result = document.getElementById("result");
+
+      // Click para selecionar arquivo
+      uploadArea.addEventListener("click", () => fileInput.click());
+
+      // Drag & Drop
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("drag-over");
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("drag-over");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("drag-over");
+        if (e.dataTransfer.files.length) {
+          fileInput.files = e.dataTransfer.files;
+          updateFileInfo();
+        }
+      });
+
+      // Atualizar info do arquivo
+      fileInput.addEventListener("change", updateFileInfo);
+
+      function updateFileInfo() {
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          const size = (file.size / 1024).toFixed(2);
+          fileInfo.innerHTML = `<strong>${file.name}</strong> (${size} KB)`;
+          fileInfo.classList.add("show");
+          btnValidar.disabled = false;
+        } else {
+          fileInfo.classList.remove("show");
+          btnValidar.disabled = true;
+        }
+      }
+
+      // Submit do formulário
+      uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(uploadForm);
+        formData.set(
+          "validar_nosso_numero",
+          document.getElementById("validar_nosso_numero").checked
+        );
+
+        loading.classList.add("show");
+        result.classList.remove("show");
+        btnValidar.disabled = true;
+
+        try {
+          const response = await fetch("/validar", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            mostrarResultado(data);
+          } else {
+            mostrarErro(data.error || "Erro desconhecido");
+          }
+        } catch (error) {
+          mostrarErro("Erro ao comunicar com o servidor: " + error.message);
+        } finally {
+          loading.classList.remove("show");
+          btnValidar.disabled = false;
+        }
+      });
+
+      function mostrarResultado(data) {
+        result.className = "result show " + (data.valid ? "success" : "error");
+
+        let html = `
+                <h2>${
+                  data.valid ? "✅ Arquivo Válido!" : "⚠️ Erros Encontrados"
+                }</h2>
+                
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-value">${data.total_linhas}</div>
+                        <div class="stat-label">Total Linhas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${
+                          data.resumo.total_titulos
+                        }</div>
+                        <div class="stat-label">Títulos</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">R$ ${data.resumo.valor_total.toFixed(
+                          2
+                        )}</div>
+                        <div class="stat-label">Valor Total</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">${data.total_erros}</div>
+                        <div class="stat-label">Erros</div>
+                    </div>
+                </div>
+            `;
+
+        if (data.total_erros > 0) {
+          html += '<div class="errors-list">';
+          data.erros.forEach((erro) => {
+            const severity = erro.severity || "field";
+            const severityClass = severity;
+            html += `
+                        <div class="error-item ${severityClass}">
+                            <span class="error-severity ${severity}">${severity.toUpperCase()}</span>
+                            <strong>Linha ${erro.line || "?"}:</strong> 
+                            ${erro.error || "Erro desconhecido"}
+                            ${
+                              erro.field
+                                ? `<br><small>Campo: ${erro.field}</small>`
+                                : ""
+                            }
+                            ${
+                              erro.found !== undefined
+                                ? `<br><small>Encontrado: "${erro.found}"</small>`
+                                : ""
+                            }
+                            ${
+                              erro.expected !== undefined
+                                ? `<br><small>Esperado: "${erro.expected}"</small>`
+                                : ""
+                            }
+                        </div>
+                    `;
+          });
+          html += "</div>";
+        }
+
+        result.innerHTML = html;
+      }
+
+      function mostrarErro(mensagem) {
+        result.className = "result show error";
+        result.innerHTML = `<h2>❌ Erro</h2><p>${mensagem}</p>`;
+      }
+    </script>
+  </body>
+</html>
