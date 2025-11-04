@@ -1,5 +1,5 @@
 from typing import List, Dict, Any
-from layouts.bradesco_cnab400 import FIELD_MAP, FieldSpec, RECORD_LEVEL_VALIDATORS
+from layouts.bradesco_cnab400 import FIELD_MAP, FieldSpec, RECORD_LEVEL_VALIDATORS, set_codigo_banco
 from decimal import Decimal
 
 class ValidationResult:
@@ -28,15 +28,22 @@ class ValidationResult:
 
 
 def validate_line(line: str, line_num: int, result: ValidationResult):
-    if len(line) != 400:
+    # Aceitar 400 ou 402 caracteres (alguns arquivos têm \r\n extras)
+    line_len = len(line)
+    if line_len not in (400, 402):
         result.errors.append({
             'line': line_num,
             'record_type': line[:1],
             'error': 'invalid_line_length',
             'expected_length': 400,
-            'found_length': len(line)
+            'found_length': line_len
         })
         # Continue to attempt field validations if possible
+    
+    # Normalizar linha para 400 caracteres (remover extras no final)
+    if line_len > 400:
+        line = line[:400]
+    
     record_type = line[0:1]
     fields: List[FieldSpec] = FIELD_MAP.get(record_type, [])
     context: Dict[str, Any] = {}
@@ -72,10 +79,17 @@ def validate_file(path: str, tolerancia_centavos: int = 0) -> ValidationResult:
     titulos_count = 0
     trailer_line = None
     tol = Decimal(tolerancia_centavos) / Decimal('100')
+    
     with open(path, 'r', encoding='latin1') as f:
         for idx, raw_line in enumerate(f, start=1):
             line = raw_line.rstrip('\n').rstrip('\r')
             lines_cache.append(line)
+            
+            # Capturar código do banco do header (linha 1, tipo 0, posições 77-79)
+            if idx == 1 and line.startswith('0') and len(line) >= 79:
+                codigo_banco = line[76:79]  # posições 77-79 (índice 76-78)
+                set_codigo_banco(codigo_banco)
+            
             validate_line(line, idx, result)
             if len(line) == 400 and line.startswith('1'):
                 titulos_count += 1

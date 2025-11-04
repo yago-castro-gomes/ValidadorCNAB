@@ -11,6 +11,7 @@ CODIGO_BANCO = None  # Armazena código do banco detectado no header para valida
 DATE_RE = re.compile(r'\d{6}')
 NUM_RE = re.compile(r'\d+')
 AMOUNT_13_2_RE = re.compile(r'\d{13}')
+    CODIGO_BANCO = codigo.strip() if codigo else Nonefrom datetime import datetime
 
 # ================= Utilitários Globais =================
 CURRENT_CENTURY = 2000  # poderá ser ajustado dinamicamente pelo validador
@@ -94,11 +95,6 @@ def set_validate_nosso_numero(flag: bool):
     """Ativa/desativa validação de DV do Nosso Número Bradesco."""
     global VALIDATE_NOSSO_NUMERO
     VALIDATE_NOSSO_NUMERO = bool(flag)
-
-def set_codigo_banco(codigo: str):
-    """Define o código do banco para validações condicionais (ex: sequencial REAG)."""
-    global CODIGO_BANCO
-    CODIGO_BANCO = codigo.strip() if codigo else None
 
 # ================= Especificação de Campo =================
 @dataclass
