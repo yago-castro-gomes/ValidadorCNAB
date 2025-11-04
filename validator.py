@@ -30,19 +30,21 @@ class ValidationResult:
 def validate_line(line: str, line_num: int, result: ValidationResult):
     # Aceitar 400 ou 402 caracteres (alguns arquivos têm \r\n extras)
     line_len = len(line)
-    if line_len not in (400, 402):
+    
+    # Normalizar linha para 400 caracteres (remover extras no final se necessário)
+    if line_len > 400:
+        line = line[:400]
+    
+    # Reportar erro apenas se linha for muito curta ou muito longa (não 400-402)
+    if line_len < 400 or line_len > 402:
         result.errors.append({
             'line': line_num,
             'record_type': line[:1],
             'error': 'invalid_line_length',
             'expected_length': 400,
-            'found_length': line_len
+            'found_length': line_len,
+            'severity': 'field'
         })
-        # Continue to attempt field validations if possible
-    
-    # Normalizar linha para 400 caracteres (remover extras no final)
-    if line_len > 400:
-        line = line[:400]
     
     record_type = line[0:1]
     fields: List[FieldSpec] = FIELD_MAP.get(record_type, [])
